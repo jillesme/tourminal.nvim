@@ -6,6 +6,40 @@ local function absolute(path)
   return vim.fn.fnamemodify(path, ":p")
 end
 
+local function directory_or_fallback(path, fallback)
+  local stat = path and vim.uv.fs_stat(path)
+  if stat and stat.type == "directory" then
+    return path
+  end
+  if stat and stat.type == "file" then
+    return vim.fs.dirname(path)
+  end
+  local parent = path and vim.fs.dirname(path)
+  local parent_stat = parent and vim.uv.fs_stat(parent)
+  if parent_stat and parent_stat.type == "directory" then
+    return parent
+  end
+  return fallback
+end
+
+local function buffer_workspace()
+  local fallback = vim.fn.getcwd()
+  local buffer_name = vim.api.nvim_buf_get_name(0)
+  if buffer_name == "" then
+    return fallback
+  end
+
+  if vim.startswith(buffer_name, "oil://") then
+    local oil_path = vim.fs.normalize(vim.uri_decode(buffer_name:sub(#"oil://" + 1)))
+    return directory_or_fallback(oil_path, fallback)
+  end
+
+  if vim.bo.buftype ~= "" or buffer_name:match("^%a[%w+.-]*://") then
+    return fallback
+  end
+  return directory_or_fallback(buffer_name, fallback)
+end
+
 local function invocation(path)
   local command = { config.get().tour_command, "inspect", "--json" }
   local cwd
@@ -23,8 +57,7 @@ local function invocation(path)
     return command, cwd
   end
 
-  local buffer_name = vim.api.nvim_buf_get_name(0)
-  cwd = buffer_name ~= "" and vim.fs.dirname(buffer_name) or vim.fn.getcwd()
+  cwd = buffer_workspace()
   table.insert(command, cwd)
   return command, cwd
 end

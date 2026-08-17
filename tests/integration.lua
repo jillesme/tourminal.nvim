@@ -49,6 +49,23 @@ local function run()
   tourminal.stop({ silent = true })
   assert_equal(tourminal.current(), nil, "stopped tour")
   assert_equal(ui.note_window(), nil, "closed note window")
+
+  vim.cmd("lcd " .. vim.fn.fnameescape(vim.fs.dirname(root)))
+  local oil_buffer = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_name(oil_buffer, "oil://" .. root .. "/")
+  vim.bo[oil_buffer].buftype = "acwrite"
+  vim.api.nvim_win_set_buf(0, oil_buffer)
+  vim.env.TOUR_EXPECT_WORKSPACE = root
+
+  tourminal.start()
+  assert(vim.wait(5000, function()
+    return tourminal.current() ~= nil and session._state().mark_buffer ~= nil
+  end), "tour did not start from Oil buffer")
+  assert_equal(tourminal.current().title, "Integration tour", "Oil tour title")
+  assert_equal(vim.api.nvim_buf_get_name(0), root .. "/main.lua", "Oil workspace file")
+  tourminal.stop({ silent = true })
+
+  vim.env.TOUR_EXPECT_WORKSPACE = nil
   vim.fn.delete(root, "rf")
 end
 

@@ -7,5 +7,14 @@ if [ "${1:-}" = "inspect" ] && [ "${2:-}" = "--help" ]; then
 fi
 
 : "${TOUR_TEST_ROOT:?TOUR_TEST_ROOT must be set}"
+if [ -n "${TOUR_EXPECT_WORKSPACE:-}" ]; then
+  for argument do
+    workspace=$argument
+  done
+  if [ "${workspace:-}" != "$TOUR_EXPECT_WORKSPACE" ] || [ "$PWD" != "$TOUR_EXPECT_WORKSPACE" ]; then
+    echo "expected workspace and cwd to be $TOUR_EXPECT_WORKSPACE, got ${workspace:-<none>} and $PWD" >&2
+    exit 2
+  fi
+fi
 fixture_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 sed "s|__ROOT__|$TOUR_TEST_ROOT|g" "$fixture_dir/fixtures/manifest.json"
