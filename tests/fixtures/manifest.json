@@ -1,0 +1,52 @@
+{
+  "apiVersion": 1,
+  "root": "__ROOT__",
+  "diagnostics": [],
+  "tours": [
+    {
+      "path": "__ROOT__/.tours/integration.tour",
+      "title": "Integration tour",
+      "primary": true,
+      "steps": [
+        {
+          "number": 1,
+          "label": "File step",
+          "description": "### File step\n\nFollow the real buffer.",
+          "file": "main.lua",
+          "pattern": "^local answer",
+          "selection": {
+            "start": { "line": 3, "character": 1 },
+            "end": { "line": 3, "character": 17 }
+          },
+          "commands": ["workbench.action.files.save"],
+          "resolved": {
+            "kind": "file",
+            "path": "__ROOT__/main.lua",
+            "displayPath": "main.lua",
+            "targetLine": 3,
+            "selectionStart": 3,
+            "selectionEnd": 3
+          }
+        },
+        {
+          "number": 2,
+          "label": "Content step",
+          "description": "### Content step\n\nThe source buffer stays in place.",
+          "resolved": { "kind": "content" }
+        },
+        {
+          "number": 3,
+          "label": "Embedded step",
+          "description": "### Embedded step",
+          "file": "sample.lua",
+          "resolved": {
+            "kind": "embedded",
+            "displayPath": "sample.lua",
+            "source": "local embedded = true\nreturn embedded",
+            "targetLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

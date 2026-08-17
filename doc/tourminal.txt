@@ -1,0 +1,94 @@
+*tourminal.nvim*                         Follow CodeTours in Neovim
+
+==============================================================================
+CONTENTS                                                    *tourminal-contents*
+
+1. Introduction ............................................... |tourminal|
+2. Requirements .................................... |tourminal-requirements|
+3. Commands ............................................ |tourminal-commands|
+4. Configuration .................................. |tourminal-configuration|
+5. Lua API ................................................. |tourminal-api|
+
+==============================================================================
+INTRODUCTION                                                    *tourminal*
+
+tourminal.nvim follows Microsoft CodeTour walkthroughs using real Neovim
+buffers. The current step is highlighted and its Markdown description appears
+in a floating window near the target line.
+
+The plugin is a frontend for the Tourminal executable. Tour discovery, path
+safety, pattern resolution, platform conditions, Git-ref warnings, and linked
+tours therefore behave the same in the terminal and in Neovim.
+
+Tour-provided commands are displayed but never executed.
+
+==============================================================================
+REQUIREMENTS                                        *tourminal-requirements*
+
+- Neovim 0.10 or newer.
+- `tour` on PATH with support for `tour inspect --json`.
+
+Run `:checkhealth tourminal` to check both requirements.
+
+==============================================================================
+COMMANDS                                                *tourminal-commands*
+
+                                                                *:Tour*
+:Tour [path]           Discover and start a tour. `path` may be a workspace
+                       directory or a specific `.tour` file.
+
+                                                            *:TourNext*
+:TourNext              Open the next step.
+
+                                                            *:TourPrev*
+:TourPrev              Open the previous step.
+
+                                                           *:TourSteps*
+:TourSteps             Choose any step in the active tour.
+
+                                                          *:TourResume*
+:TourResume            Return to the active step after navigating elsewhere.
+
+                                                          *:TourReload*
+:TourReload            Reload tours and resolved locations from disk.
+
+                                                            *:TourStop*
+:TourStop              End the active tour and remove its UI.
+
+In the Markdown window: `n` next, `p` previous, `g` choose step, `r` reload,
+`q` stop, and `o` explicitly opens the current URI step.
+
+==============================================================================
+CONFIGURATION                                      *tourminal-configuration*
+
+Defaults work without calling setup(). To override them: >lua
+
+  require("tourminal").setup({
+    tour_command = "tour",
+    note = {
+      width = 72,
+      max_height = 18,
+      border = "rounded",
+      winblend = 0,
+    },
+  })
+<
+No global key mappings are installed. Map commands or Lua functions using your
+normal Neovim configuration.
+
+==============================================================================
+LUA API                                                     *tourminal-api*
+
+`require("tourminal").start({ path = path, step = number })`
+`require("tourminal").next()`
+`require("tourminal").previous()`
+`require("tourminal").steps()`
+`require("tourminal").resume()`
+`require("tourminal").reload()`
+`require("tourminal").stop()`
+`require("tourminal").current()`
+`require("tourminal").statusline()`
+
+The statusline function returns an empty string when no tour is active.
+
+vim:tw=78:ts=8:noet:ft=help:norl:

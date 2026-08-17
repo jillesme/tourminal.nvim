@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+if [ "${1:-}" = "inspect" ] && [ "${2:-}" = "--help" ]; then
+  echo "Usage: tour inspect [--json]"
+  exit 0
+fi
+
+: "${TOUR_TEST_ROOT:?TOUR_TEST_ROOT must be set}"
+fixture_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+sed "s|__ROOT__|$TOUR_TEST_ROOT|g" "$fixture_dir/fixtures/manifest.json"

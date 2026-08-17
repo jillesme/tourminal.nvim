@@ -1,0 +1,14 @@
+:Tour	tourminal.txt	/*:Tour*
+:TourNext	tourminal.txt	/*:TourNext*
+:TourPrev	tourminal.txt	/*:TourPrev*
+:TourReload	tourminal.txt	/*:TourReload*
+:TourResume	tourminal.txt	/*:TourResume*
+:TourSteps	tourminal.txt	/*:TourSteps*
+:TourStop	tourminal.txt	/*:TourStop*
+tourminal	tourminal.txt	/*tourminal*
+tourminal-api	tourminal.txt	/*tourminal-api*
+tourminal-commands	tourminal.txt	/*tourminal-commands*
+tourminal-configuration	tourminal.txt	/*tourminal-configuration*
+tourminal-contents	tourminal.txt	/*tourminal-contents*
+tourminal-requirements	tourminal.txt	/*tourminal-requirements*
+tourminal.nvim	tourminal.txt	/*tourminal.nvim*
