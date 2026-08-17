@@ -1,5 +1,6 @@
 local backend = require("tourminal.backend")
 local ui = require("tourminal.ui")
+local actions = require("tourminal.actions")
 
 local M = {}
 
@@ -14,6 +15,74 @@ end
 
 local function valid_window(window)
   return window and vim.api.nvim_win_is_valid(window)
+end
+
+local function buffer_mapping(buffer, key)
+  for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(buffer, "n")) do
+    if mapping.lhs == key then
+      return mapping
+    end
+  end
+end
+
+local function restore_mapping(buffer, key, mapping)
+  if not mapping then
+    return
+  end
+  local rhs = mapping.callback or mapping.rhs
+  if rhs == nil then
+    return
+  end
+  vim.keymap.set("n", key, rhs, {
+    buffer = buffer,
+    desc = mapping.desc,
+    expr = mapping.expr == 1,
+    nowait = mapping.nowait == 1,
+    remap = mapping.noremap == 0,
+    silent = mapping.silent == 1,
+  })
+end
+
+local function clear_source_mappings()
+  local buffer = state.mapping_buffer
+  if not buffer or not vim.api.nvim_buf_is_valid(buffer) then
+    state.mapping_buffer = nil
+    state.saved_mappings = nil
+    return
+  end
+  for key, method in pairs(actions) do
+    local current = buffer_mapping(buffer, key)
+    if current and current.desc == "Tourminal " .. method then
+      pcall(vim.keymap.del, "n", key, { buffer = buffer })
+      restore_mapping(buffer, key, state.saved_mappings and state.saved_mappings[key])
+    end
+  end
+  state.mapping_buffer = nil
+  state.saved_mappings = nil
+end
+
+local function set_source_mappings(window)
+  if not valid_window(window) then
+    return
+  end
+  local buffer = vim.api.nvim_win_get_buf(window)
+  if state.mapping_buffer == buffer then
+    return
+  end
+  clear_source_mappings()
+  state.mapping_buffer = buffer
+  state.saved_mappings = {}
+  for key, method in pairs(actions) do
+    state.saved_mappings[key] = buffer_mapping(buffer, key) or false
+    vim.keymap.set("n", key, function()
+      M[method]()
+    end, {
+      buffer = buffer,
+      silent = true,
+      nowait = true,
+      desc = "Tourminal " .. method,
+    })
+  end
 end
 
 local function ensure_code_window()
@@ -170,7 +239,9 @@ local function show_step()
     step.error = open_error
   end
 
-  ui.show_step(state.tour, step, code_window or ensure_code_window())
+  code_window = code_window or ensure_code_window()
+  ui.show_step(state.tour, step, code_window)
+  set_source_mappings(code_window)
   emit_user_event("TourminalStep", {
     tour = state.tour.title,
     step = state.step_index,
@@ -264,7 +335,9 @@ function M.next()
   end
   state.complete = true
   clear_highlights()
-  ui.show_complete(state.tour, ensure_code_window())
+  local code_window = ensure_code_window()
+  ui.show_complete(state.tour, code_window)
+  set_source_mappings(code_window)
   emit_user_event("TourminalComplete", { tour = state.tour.title })
 end
 
@@ -365,6 +438,7 @@ function M.stop(options)
   local was_active = state.tour ~= nil
   state.request = state.request + 1
   clear_highlights()
+  clear_source_mappings()
   ui.close()
   state.manifest = nil
   state.tour = nil

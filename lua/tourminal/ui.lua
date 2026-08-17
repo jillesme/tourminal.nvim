@@ -1,4 +1,5 @@
 local config = require("tourminal.config")
+local actions = require("tourminal.actions")
 
 local M = {}
 
@@ -24,15 +25,7 @@ local function ensure_buffer()
   vim.bo[note_buffer].bufhidden = "hide"
   vim.bo[note_buffer].swapfile = false
 
-  local mappings = {
-    n = "next",
-    p = "previous",
-    g = "steps",
-    r = "reload",
-    q = "stop",
-    o = "open_uri",
-  }
-  for key, method in pairs(mappings) do
+  for key, method in pairs(actions) do
     vim.keymap.set("n", key, function()
       require("tourminal")[method]()
     end, {

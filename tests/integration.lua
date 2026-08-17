@@ -4,6 +4,18 @@ local function assert_equal(actual, expected, message)
   end
 end
 
+local function press(key)
+  vim.api.nvim_feedkeys(vim.keycode(key), "mx", false)
+end
+
+local function buffer_mapping(buffer, key)
+  for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(buffer, "n")) do
+    if mapping.lhs == key then
+      return mapping
+    end
+  end
+end
+
 local function run()
   local root = vim.fn.tempname()
   vim.fn.mkdir(root .. "/.tours", "p")
@@ -30,9 +42,13 @@ local function run()
   local note_text = table.concat(vim.api.nvim_buf_get_lines(ui.note_buffer(), 0, -1, false), "\n")
   assert(note_text:find("were not executed", 1, true), "command safety warning is missing")
 
-  tourminal.next()
+  press("n")
   assert_equal(tourminal.current().step, 2, "content step")
   assert_equal(vim.api.nvim_buf_get_name(0), root .. "/main.lua", "content step should retain source")
+  press("p")
+  assert_equal(tourminal.current().step, 1, "mapped previous step")
+  press("n")
+  assert_equal(tourminal.current().step, 2, "mapped next step")
 
   tourminal.next()
   assert_equal(tourminal.current().step, 3, "embedded step")
@@ -54,15 +70,22 @@ local function run()
   local oil_buffer = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_name(oil_buffer, "oil://" .. root .. "/")
   vim.bo[oil_buffer].buftype = "acwrite"
+  vim.keymap.set("n", "n", function()
+    vim.g.tourminal_test_oil_mapping = true
+  end, { buffer = oil_buffer, desc = "Oil next" })
   vim.api.nvim_win_set_buf(0, oil_buffer)
   vim.env.TOUR_EXPECT_WORKSPACE = root
 
-  tourminal.start()
+  tourminal.start({ step = 2 })
   assert(vim.wait(5000, function()
-    return tourminal.current() ~= nil and session._state().mark_buffer ~= nil
+    return tourminal.current() ~= nil and tourminal.current().step == 2
   end), "tour did not start from Oil buffer")
   assert_equal(tourminal.current().title, "Integration tour", "Oil tour title")
-  assert_equal(vim.api.nvim_buf_get_name(0), root .. "/main.lua", "Oil workspace file")
+  assert_equal(vim.api.nvim_buf_get_name(0), "oil://" .. root .. "/", "Oil workspace buffer")
+  assert_equal(buffer_mapping(oil_buffer, "n").desc, "Tourminal next", "Oil next mapping")
+  press("n")
+  assert_equal(tourminal.current().step, 3, "mapped Oil next step")
+  assert_equal(buffer_mapping(oil_buffer, "n").desc, "Oil next", "restored Oil mapping")
   tourminal.stop({ silent = true })
 
   vim.env.TOUR_EXPECT_WORKSPACE = nil
