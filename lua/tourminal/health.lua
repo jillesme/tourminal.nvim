@@ -33,7 +33,7 @@ function M.check()
     vim.health.ok("Tourminal supports the editor manifest API")
   else
     vim.health.error("This Tourminal build does not support `tour inspect --json`", {
-      "Upgrade Tourminal to a release that includes the editor manifest API.",
+      "Upgrade to Tourminal 0.1.4 or newer.",
     })
   end
 end

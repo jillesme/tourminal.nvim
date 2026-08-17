@@ -26,7 +26,7 @@ Tour-provided commands are displayed but never executed.
 REQUIREMENTS                                        *tourminal-requirements*
 
 - Neovim 0.10 or newer.
-- `tour` on PATH with support for `tour inspect --json`.
+- Tourminal 0.1.4 or newer installed as `tour` on PATH.
 
 Run `:checkhealth tourminal` to check both requirements.
 

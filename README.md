@@ -7,7 +7,7 @@ Tour discovery and resolution come from the [`tour`](https://github.com/jillesme
 ## Requirements
 
 - Neovim 0.10+
-- Tourminal installed and available as `tour`, with support for `tour inspect --json`
+- Tourminal 0.1.4+ installed and available as `tour`
 
 On macOS or Linux:
 
@@ -24,6 +24,7 @@ With lazy.nvim:
 ```lua
 {
   "jillesme/tourminal.nvim",
+  version = "*",
   cmd = { "Tour", "TourNext", "TourPrev", "TourSteps", "TourResume", "TourReload", "TourStop" },
   opts = {},
 }
