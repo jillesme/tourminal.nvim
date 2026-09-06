@@ -25,3 +25,5 @@ jobs:
         run: shellcheck tests/fake-tour
       - name: Run headless integration test
         run: nvim --headless -i NONE -u tests/minimal_init.lua -l tests/integration.lua
+      - name: Run regression tests
+        run: nvim --headless -i NONE -u tests/minimal_init.lua -l tests/regressions.lua
