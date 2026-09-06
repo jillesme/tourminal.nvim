@@ -228,7 +228,9 @@ local function show_step()
   local code_window = ensure_code_window()
   local open_error
 
-  if kind == "file" then
+  if step.error and step.error ~= "" then
+    -- Failed backend resolutions are informational; never load their paths.
+  elseif kind == "file" then
     code_window, open_error = open_file(step)
   elseif kind == "embedded" then
     code_window, open_error = open_scratch(step, false)
@@ -261,6 +263,7 @@ local function begin_tour(tour, step)
 end
 
 local function choose_tour(manifest, requested_step)
+  local request = state.request
   if #manifest.tours == 0 then
     local message = "No CodeTours found in " .. (manifest.root or "this workspace")
     if manifest.diagnostics and #manifest.diagnostics > 0 then
@@ -281,7 +284,7 @@ local function choose_tour(manifest, requested_step)
       return (tour.primary and "★ " or "") .. tour.title .. (" (%d steps)"):format(#tour.steps)
     end,
   }, function(choice)
-    if choice then
+    if choice and request == state.request and state.manifest == manifest then
       begin_tour(choice, requested_step)
     end
   end)
@@ -362,7 +365,9 @@ function M.steps()
     notify("No active tour", vim.log.levels.WARN)
     return
   end
-  vim.ui.select(state.tour.steps, {
+  local request = state.request
+  local selected_tour = state.tour
+  vim.ui.select(selected_tour.steps, {
     prompt = state.tour.title .. " — Steps",
     kind = "tourminal-steps",
     format_item = function(step)
@@ -370,7 +375,7 @@ function M.steps()
       return ("%d. %s%s"):format(step.number, step.label, current)
     end,
   }, function(choice)
-    if choice then
+    if choice and request == state.request and state.tour == selected_tour then
       state.step_index = choice.number
       show_step()
     end
